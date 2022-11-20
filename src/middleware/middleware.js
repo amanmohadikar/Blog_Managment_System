@@ -4,36 +4,25 @@ const blogModel = require("../model/blogModel")
 const mongoose = require('mongoose');
 
 
-const authentication = function (req, res, next) {
 
+
+const authentication = function (req, res, next) {
     try {
         let token = req.headers['x-api-key']
-        if (!token) return res.status(404).send({ status:false , message : "Token is not present in header"})
+        if (!token) return res.status(404).send({ status: false, message: "Token is not present in header" })
 
+        console.log("This is token : ", token)
 
-        let payloadData ;
-        // console.log(token)
-        let verifytoken = jwt.verify( token, "our first project" , function(err , decoded){
-            payloadData = decoded
-            if(err) return res.status(401).send({status : false , message : "Authentication failed."})
-        })
+        let decoded = jwt.verify(token, "our first project")
 
-        // // Now token is Decoded. 
-        // // verifytoken token will give undefined becoz we are using call back func. inside .verify() and this call back stores two thing , First is err so we can write if statement when error comes with sutabile status code with sutabile msg and Second is decoded data that we need to store some whare so for that we are storing that data in payloaData variable. 
+        req.tokenAuthorId = decoded._id
 
-        // console.log(payloadData)
-    
-
-        // // Set attri. in request --> Used in autherisation , this tokenAuthorId
-        req.tokenAuthorId = payloadData._id
-
-        console.log(req.tokenAuthorId)
-
+        console.log("This is author Id of token : ", req.tokenAuthorId)
         next()
-
-    } catch (err) {
+    }
+    catch (err) {
         res.status(500).send({ status: false, msg: err.message })
-    }   
+    }
 
 }
 
@@ -41,20 +30,16 @@ const authentication = function (req, res, next) {
 
 
 const authorisation = async function (req, res, next) {
-
-
     try {
-
         let tokenAuthorId = req.tokenAuthorId
         let blogId = req.params.blogId
-        
+
         // console.log(tokenAuthorId)
-        // console.log()
         if (!mongoose.Types.ObjectId.isValid(blogId)) return res.status(400).send({ Status: false, msg: "Invalid Blog Id." })
 
         let blogData = await blogModel.findById(blogId)
 
-        if(! blogData ) return res.status(400).send({status : false , msg :"BlogId is not exist in DB."})
+        if (!blogData) return res.status(400).send({ status: false, msg: "BlogId is not exist in DB." })
 
         // console.log(blogData)
 
@@ -64,15 +49,12 @@ const authorisation = async function (req, res, next) {
 
         if (authorInBlog.toString() !== tokenAuthorId.toString()) return res.status(403).send({ status: false, msg: "Unauthorize person , forbidden" })
 
-
         next()
-
-    } catch (err) { 
+    }
+    catch (err) {
         console.log(err.message)
         res.status(500).send({ status: false, msg: err.message })
     }
-
-
 }
 
 
