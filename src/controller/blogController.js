@@ -3,6 +3,7 @@ const blogModel = require('../model/blogModel')
 const mongoose = require('mongoose');
 
 
+// This is my first project
 
 const blogs = async function (req, res) {
     try {
