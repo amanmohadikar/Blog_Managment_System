@@ -35,8 +35,7 @@ const blogs = async function (req, res) {
             req.body.deletedAt = date
             isDeleted = true
         }
-
-        
+     
         let newData = await blogModel.create(data)
         res.status(201).send({ status: true, data: newData })
     }
